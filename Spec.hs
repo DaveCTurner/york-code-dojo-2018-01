@@ -32,6 +32,8 @@ main = hspec $ do
     take 100 ([1,0,7,-1] ++ cycle [0,1,0,-1]) `shouldGive` 27
     take 100 ([1,0,9,-1] ++ cycle [0,1,0,-1]) `shouldGive` 9
 
+    take 100 ([1,0,-7,-1] ++ cycle [0,1,0,-1]) `shouldGive` (-7)
+
   describe "requirement 3: five point penalty for repeated scores" $ do
     take 100 (0         :  cycle [0,1]) `shouldGive` 45
     take 100 ([0,1]     ++ cycle [1,0]) `shouldGive` 45
