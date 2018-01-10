@@ -20,3 +20,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
+    - primes
