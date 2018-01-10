@@ -1,0 +1,22 @@
+name:                york-code-dojo
+version:             0.1.0.0
+github:              "githubuser/york-code-dojo"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2018 Author name here"
+
+description:         Please see the README on Github at <https://github.com/githubuser/york-code-dojo#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+tests:
+  york-code-dojo-test:
+    main:                Spec.hs
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hspec
