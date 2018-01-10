@@ -2,10 +2,16 @@ module Main where
 
 import Data.Numbers.Primes
 import Test.Hspec
+import Text.Printf
 
 main :: IO ()
 main = hspec $ do
-  let shouldGive scores expected = it (take 70 (show scores) ++ "... gives " ++ show expected) $ calculateScore scores `shouldBe` expected
+  let shouldGiveWithRolled roll scores expected
+        = it (take 70 (show scores) ++ "... gives " ++ printf "%5d" expected ++ " when the dice shows " ++ show roll)
+        $ calculateScore roll scores `shouldBe` expected
+      shouldGiveWith6   = shouldGiveWithRolled 6
+      shouldGiveWith5   = shouldGiveWithRolled 5
+      shouldGive        = shouldGiveWith6
 
   describe "basic requirements: adds the scores up" $ do
     take 100 ([0,2] ++ cycle [0,1]) `shouldGive` 51
@@ -24,7 +30,7 @@ main = hspec $ do
     take 100 (cycle [0,-1])         `shouldGive` (-50)
     take 100 ([2,3] ++ cycle [0,1]) `shouldGive` 55
 
-  describe "requirement 2: add twenty if the result is prime" $ do
+  describe "requirement 2: 20 bonus points if the result is prime" $ do
     take 100 ([1,0,1,-1] ++ cycle [0,1,0,-1]) `shouldGive` 1
     take 100 ([1,0,2,-1] ++ cycle [0,1,0,-1]) `shouldGive` 23
     take 100 ([1,0,3,-1] ++ cycle [0,1,0,-1]) `shouldGive` 23
@@ -46,6 +52,11 @@ main = hspec $ do
     replicate 100 5                `shouldGive` 25
     replicate 100 10               `shouldGive` 505
 
+  describe "requirement 9: 100 bonus points if the last digit of the score matches a dice roll" $ do
+    take 100 ([0, 55] ++ cycle [1,-1]) `shouldGiveWith6`   55
+    take 100 ([0, 55] ++ cycle [1,-1]) `shouldGiveWith5`  155
+    take 100 ([0,-55] ++ cycle [1,-1]) `shouldGiveWith6` (-55)
+    take 100 ([0,-55] ++ cycle [1,-1]) `shouldGiveWith5`   45
 
 
 
@@ -99,12 +110,14 @@ main = hspec $ do
 
 
 
-
-calculateScore :: [Integer] -> Integer
-calculateScore = addTwentyIfPrime . incrementIfPositiveAndEven . go
+calculateScore :: Integer -> [Integer] -> Integer
+calculateScore roll = req9BonusIfLastDigitMatchesRoll . req2BonusIfPrime . req1BonusIfPositiveAndEven . go
   where
-  addTwentyIfPrime x = if x > 0 && isPrime x then x + 20 else x
-  incrementIfPositiveAndEven x = if even x && x > 0 then x + 1 else x
+  req9BonusIfLastDigitMatchesRoll = bonus 100 (\x -> mod x 10 == roll)
+  req2BonusIfPrime                = bonus 20  (\x -> x > 0 && isPrime x)
+  req1BonusIfPositiveAndEven      = bonus 1   (\x -> x > 0 && even x)
+ 
+  bonus points condition x = if condition x then points + x else x
 
   go [] = 0
   go [x] = x
