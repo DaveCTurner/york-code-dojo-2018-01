@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Function
 import Data.Numbers.Primes
 import Test.Hspec
 import Text.Printf
@@ -111,16 +112,21 @@ main = hspec $ do
 
 
 calculateScore :: Integer -> [Integer] -> Integer
-calculateScore roll = req9BonusIfLastDigitMatchesRoll . req2BonusIfPrime . req1BonusIfPositiveAndEven . go
+calculateScore roll scores
+    = sum scores
+    & req3PenaltyIfRepeated
+    & req1BonusIfPositiveAndEven
+    & req2BonusIfPrime
+    & req9BonusIfLastDigitMatchesRoll
   where
-  req9BonusIfLastDigitMatchesRoll = bonus 100 (\x -> mod x 10 == roll)
-  req2BonusIfPrime                = bonus 20  (\x -> x > 0 && isPrime x)
   req1BonusIfPositiveAndEven      = bonus 1   (\x -> x > 0 && even x)
+  req2BonusIfPrime                = bonus 20  (\x -> x > 0 && isPrime x)
+  req9BonusIfLastDigitMatchesRoll = bonus 100 (\x -> mod x 10 == roll)
  
   bonus points condition x = if condition x then points + x else x
 
-  go [] = 0
-  go [x] = x
-  go (x1:xs@(x2:_)) | x1 == x2  = x1 - 5 + go xs
-                    | otherwise = x1     + go xs
-
+  req3PenaltyIfRepeated :: Integer -> Integer
+  req3PenaltyIfRepeated = subtract penalty
+    where
+      penalty = sum $ zipWith getPenalty scores (drop 1 scores)
+      getPenalty s1 s2 = if s1 == s2 then 5 else 0
